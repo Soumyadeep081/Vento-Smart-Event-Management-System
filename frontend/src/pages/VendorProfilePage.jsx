@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { vendorAPI, serviceAPI, reviewAPI, bookingAPI } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { MapPin, Briefcase, Star, CalendarDays, Plus, Edit, Trash2, CheckCircle } from 'lucide-react';
+import { MapPin, Briefcase, Star, CalendarDays, Plus, Edit, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CATEGORY_IMAGES = {
@@ -159,7 +159,9 @@ export default function VendorProfilePage({ isMyProfile = false }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '3.5rem', boxShadow: 'var(--shadow-md)', zIndex: 10
           }}>
-            {vendor.category === 'CATERING' ? '🍽️' : vendor.category === 'PHOTOGRAPHY' ? '📸' : '✨'}
+            <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff' }}>
+              {vendor.businessName ? vendor.businessName.charAt(0).toUpperCase() : <Briefcase size={40} />}
+            </div>
           </div>
         </div>
       </div>
@@ -171,9 +173,8 @@ export default function VendorProfilePage({ isMyProfile = false }) {
             <div style={{ paddingLeft: '9rem', marginBottom: '3rem' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                  <h1 style={{ fontSize: '2.2rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <h1 style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>
                     {vendor.businessName}
-                    {vendor.verified && <CheckCircle size={24} color="var(--accent-success)" />}
                   </h1>
                   <span className="badge badge-primary">{vendor.category?.replace(/_/g, ' ')}</span>
                 </div>

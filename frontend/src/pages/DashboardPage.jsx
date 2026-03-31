@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { eventAPI, bookingAPI, vendorAPI } from '../api/client';
-import { CalendarDays, Plus, TrendingUp, BookOpen, Users, DollarSign, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { CalendarDays, Plus, TrendingUp, BookOpen, Users, DollarSign, Clock, CheckCircle, XCircle, Heart, Cake, Briefcase, PartyPopper, Calendar, ClipboardList, Zap, BarChart2, Store } from 'lucide-react';
 
 function StatusBadge({ status }) {
   const map = {
@@ -53,8 +53,8 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', background: 'var(--bg-elevated)', padding: '2rem', borderRadius: 'var(--radius-lg)', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%', backgroundImage: 'url("https://images.unsplash.com/photo-1505362846-9538a7c18ed5?w=800&auto=format&fit=crop")', backgroundSize: 'cover', backgroundPosition: 'center', WebkitMaskImage: 'linear-gradient(to right, transparent, black)', maskImage: 'linear-gradient(to right, transparent, black)', opacity: 0.8 }}></div>
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ fontSize: '1.8rem', marginBottom: '0.25rem' }}>
-            Good day, {user?.name?.split(' ')[0]}! 👋
+          <h1 style={{ fontSize: '1.8rem', marginBottom: '0.25rem', fontWeight: 700 }}>
+            Welcome back, {user?.name?.split(' ')[0]}
           </h1>
           <p style={{ color: 'var(--text-secondary)' }}>Here's your event planning overview</p>
         </div>
@@ -87,12 +87,16 @@ export default function DashboardPage() {
         {/* Upcoming Events */}
         <div className="card" style={{ padding: 0 }}>
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontSize: '1rem', margin: 0 }}>📅 Your Events</h3>
+            <h3 style={{ fontSize: '1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Calendar size={18} style={{ color: 'var(--accent-primary)' }} /> Your Events
+            </h3>
             <Link to="/events" className="btn btn-ghost btn-sm">View all</Link>
           </div>
           {events.length === 0 ? (
             <div className="empty-state" style={{ padding: '2rem' }}>
-              <div className="empty-icon">🗓️</div>
+              <div style={{ background: 'var(--bg-elevated)', width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--accent-primary)', border: '1px solid var(--border-subtle)' }}>
+                <CalendarDays size={24} />
+              </div>
               <div className="empty-title">No events yet</div>
               <p style={{ fontSize: '0.85rem' }}>Create your first event to get started</p>
               <Link to="/events/new" className="btn btn-primary btn-sm" style={{ marginTop: '1rem', display: 'inline-flex' }}>
@@ -114,9 +118,9 @@ export default function DashboardPage() {
                   <div style={{
                     width: 40, height: 40, borderRadius: 'var(--radius-md)',
                     background: 'var(--gradient-primary)', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0
+                    alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0
                   }}>
-                    {ev.type === 'WEDDING' ? '💍' : ev.type === 'BIRTHDAY_PARTY' ? '🎂' : ev.type === 'CORPORATE_EVENT' ? '🏢' : '🎉'}
+                    {ev.type === 'WEDDING' ? <Heart size={20} /> : ev.type === 'BIRTHDAY_PARTY' ? <Cake size={20} /> : ev.type === 'CORPORATE_EVENT' ? <Briefcase size={20} /> : <PartyPopper size={20} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', truncate: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{ev.title}</div>
@@ -139,12 +143,16 @@ export default function DashboardPage() {
         {/* Recent Bookings */}
         <div className="card" style={{ padding: 0 }}>
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontSize: '1rem', margin: 0 }}>📋 Recent Bookings</h3>
+            <h3 style={{ fontSize: '1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <ClipboardList size={18} style={{ color: 'var(--accent-primary)' }} /> Recent Bookings
+            </h3>
             <Link to="/bookings" className="btn btn-ghost btn-sm">View all</Link>
           </div>
           {bookings.length === 0 ? (
             <div className="empty-state" style={{ padding: '2rem' }}>
-              <div className="empty-icon">📋</div>
+              <div style={{ background: 'var(--bg-elevated)', width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--accent-primary)', border: '1px solid var(--border-subtle)' }}>
+                <ClipboardList size={24} />
+              </div>
               <div className="empty-title">No bookings yet</div>
               <p style={{ fontSize: '0.85rem' }}>Browse vendors to book services</p>
               <Link to="/vendors" className="btn btn-primary btn-sm" style={{ marginTop: '1rem', display: 'inline-flex' }}>
@@ -180,10 +188,10 @@ export default function DashboardPage() {
       {/* Quick Links */}
       <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
         <Link to="/vendors" className="btn btn-secondary"><Users size={16} /> Browse Vendors</Link>
-        <Link to="/recommendations" className="btn btn-secondary">⚡ AI Recommendations</Link>
-        <Link to="/compare" className="btn btn-secondary">📊 Compare Vendors</Link>
+        <Link to="/recommendations" className="btn btn-secondary"><Zap size={16} /> AI Recommendations</Link>
+        <Link to="/compare" className="btn btn-secondary"><BarChart2 size={16} /> Compare Vendors</Link>
         {user?.role === 'VENDOR' && (
-          <Link to="/vendor-profile" className="btn btn-primary">🏪 Manage My Profile</Link>
+          <Link to="/vendor-profile" className="btn btn-primary"><Store size={16} /> Manage My Profile</Link>
         )}
       </div>
     </div>

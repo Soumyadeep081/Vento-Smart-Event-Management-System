@@ -70,14 +70,17 @@ export default function Navbar() {
           
           {isAuthenticated ? (
             <>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{user?.name}</span>
-                <span className="badge badge-secondary" style={{ marginLeft: '0.5rem' }}>
-                  {user?.role}
-                </span>
-              </div>
-              <button className="btn btn-ghost btn-sm" onClick={handleLogout}>
-                <LogOut size={15} /> Logout
+              <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', transition: 'opacity var(--transition-fast)' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.85rem', fontWeight: 800 }}>
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 600 }}>{user?.name?.split(' ')[0]}</span>
+              </Link>
+              <button className="btn btn-ghost btn-sm" onClick={handleLogout} style={{ border: 'none', background: 'none', padding: '0.25rem' }} title="Logout">
+                <LogOut size={16} />
               </button>
             </>
           ) : (

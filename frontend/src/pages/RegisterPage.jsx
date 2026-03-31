@@ -33,6 +33,46 @@ export default function RegisterPage() {
   const { register, socialLogin, loading } = useAuth();
   const navigate = useNavigate();
 
+  // ── Google Sign-Up ────────────────────────────────────────────────────
+  const handleGoogleSignUp = () => {
+    if (!window.google) {
+      toast.error('Google SDK not loaded yet. Please try again.');
+      return;
+    }
+    setSocialLoading('google');
+
+    // Safety check: if callback never fires (e.g. popup closed or blocked)
+    const timer = setTimeout(() => {
+      setSocialLoading('');
+    }, 15000);
+
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'email profile openid',
+      callback: async (response) => {
+        clearTimeout(timer);
+        if (response.access_token) {
+          try {
+            await socialLogin(response.access_token, 'GOOGLE', form.role);
+            toast.success('Welcome to Vento!');
+            navigate('/dashboard');
+          } catch (err) {
+            setError(err.response?.data?.message || 'Google sign-up failed');
+            toast.error('Google sign-up failed');
+          } finally {
+            setSocialLoading('');
+          }
+        }
+      },
+      error_callback: () => {
+        clearTimeout(timer);
+        setSocialLoading('');
+        toast('Google sign-up was cancelled.');
+      }
+    });
+    client.requestAccessToken();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -49,35 +89,6 @@ export default function RegisterPage() {
     }
   };
 
-  // ── Google Sign-Up ─────────────────────────────────────────────────────
-  const handleGoogleSignUp = () => {
-    if (!window.google) {
-      toast.error('Google SDK not loaded yet. Please try again.');
-      return;
-    }
-    setSocialLoading('google');
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: async (response) => {
-        try {
-          await socialLogin(response.credential, 'GOOGLE', form.role);
-          toast.success('Welcome to Vento!');
-          navigate('/dashboard');
-        } catch (err) {
-          setError(err.response?.data?.message || 'Google sign-up failed');
-          toast.error('Google sign-up failed');
-        } finally {
-          setSocialLoading('');
-        }
-      },
-    });
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        setSocialLoading('');
-      }
-    });
-  };
-
   // ── Facebook Sign-Up ────────────────────────────────────────────────────
   const handleFacebookSignUp = () => {
     if (!window.FB) {
@@ -85,8 +96,15 @@ export default function RegisterPage() {
       return;
     }
     setSocialLoading('facebook');
+
+    // Safety check: if callback never fires (e.g. popup closed or blocked)
+    const timer = setTimeout(() => {
+      setSocialLoading('');
+    }, 15000);
+
     window.FB.login(
       async (fbResponse) => {
+        clearTimeout(timer);
         if (fbResponse.status === 'connected') {
           try {
             await socialLogin(fbResponse.authResponse.accessToken, 'FACEBOOK', form.role);

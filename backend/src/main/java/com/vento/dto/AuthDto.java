@@ -58,6 +58,9 @@ public class AuthDto {
         private String name;
         private String role;
         private Long userId;
+        private String accountId;
+        private String phone;
+        private boolean phoneVerified;
 
         public AuthResponse(String token, User user) {
             this.token = token;
@@ -65,6 +68,9 @@ public class AuthDto {
             this.name = user.getName();
             this.role = user.getRole().name();
             this.userId = user.getId();
+            this.accountId = user.getAccountId();
+            this.phone = user.getPhone();
+            this.phoneVerified = user.isPhoneVerified();
         }
     }
 }

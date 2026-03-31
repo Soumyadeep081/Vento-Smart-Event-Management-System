@@ -18,6 +18,7 @@ import BookingsPage from './pages/BookingsPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import ContactPage from './pages/ContactPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             <Route path="/compare" element={<ProtectedRoute><ComparePage /></ProtectedRoute>} />
             <Route path="/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
             <Route path="/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
             {/* Vendor Specific */}
             <Route path="/vendor-profile" element={<ProtectedRoute roles={['VENDOR']}><VendorProfilePage isMyProfile={true} /></ProtectedRoute>} />

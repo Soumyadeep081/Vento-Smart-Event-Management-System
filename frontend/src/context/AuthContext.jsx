@@ -5,11 +5,11 @@ const AuthContext = createContext(null);
 
 // ── Google Client ID ─────────────────────────────────────────────────────
 // Replace with your real Google OAuth2 Client ID
-export const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_ID = '125964361949-qem2u52v72av953jgks2t2t729hvpu88.apps.googleusercontent.com';
 
 // ── Facebook App ID ───────────────────────────────────────────────────────
 // Replace with your real Facebook App ID
-export const FACEBOOK_APP_ID = 'YOUR_FACEBOOK_APP_ID';
+export const FACEBOOK_APP_ID = '2057538768522113';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -71,8 +71,15 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const updateUser = (data) => {
+    const existing = JSON.parse(localStorage.getItem('vento_user') || '{}');
+    const updated = { ...existing, ...data };
+    localStorage.setItem('vento_user', JSON.stringify(updated));
+    setUser(updated);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, socialLogin, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, login, register, socialLogin, logout, updateUser, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

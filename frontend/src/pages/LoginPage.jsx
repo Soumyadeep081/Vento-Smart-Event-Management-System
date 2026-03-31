@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, GOOGLE_CLIENT_ID } from '../context/AuthContext';
 import { Eye, EyeOff, Wind, Zap, SlidersHorizontal, CalendarCheck } from 'lucide-react';
@@ -13,6 +13,45 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
+  // ── Google Login ────────────────────────────────────────────────────────
+  const handleGoogleLogin = () => {
+    if (!window.google) {
+      toast.error('Google SDK not loaded yet. Please try again.');
+      return;
+    }
+    setSocialLoading('google');
+    
+    // Safety check: if callback never fires (e.g. popup closed or blocked)
+    const timer = setTimeout(() => {
+      setSocialLoading('');
+    }, 15000);
+
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'email profile openid',
+      callback: async (response) => {
+        clearTimeout(timer);
+        if (response.access_token) {
+          try {
+            await socialLogin(response.access_token, 'GOOGLE');
+            toast.success('Welcome back!');
+            navigate(from, { replace: true });
+          } catch (err) {
+            setError(err.response?.data?.message || 'Google sign-in failed');
+            toast.error('Google sign-in failed');
+          } finally {
+            setSocialLoading('');
+          }
+        }
+      },
+      error_callback: () => {
+        clearTimeout(timer);
+        setSocialLoading('');
+        toast('Google sign-in was cancelled.');
+      }
+    });
+    client.requestAccessToken();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,41 +65,6 @@ export default function LoginPage() {
     }
   };
 
-  // ── Google Login ───────────────────────────────────────────────────────
-  const handleGoogleLogin = () => {
-    if (!window.google) {
-      toast.error('Google SDK not loaded yet. Please try again.');
-      return;
-    }
-    setSocialLoading('google');
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: async (response) => {
-        try {
-          await socialLogin(response.credential, 'GOOGLE');
-          toast.success('Welcome back!');
-          navigate(from, { replace: true });
-        } catch (err) {
-          setError(err.response?.data?.message || 'Google sign-in failed');
-          toast.error('Google sign-in failed');
-        } finally {
-          setSocialLoading('');
-        }
-      },
-    });
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // Fallback: open the full OAuth popup
-        window.google.accounts.oauth2.initTokenClient({
-          client_id: GOOGLE_CLIENT_ID,
-          scope: 'openid email profile',
-          callback: () => {},
-        }).requestAccessToken();
-        setSocialLoading('');
-      }
-    });
-  };
-
   // ── Facebook Login ──────────────────────────────────────────────────────
   const handleFacebookLogin = () => {
     if (!window.FB) {
@@ -68,8 +72,15 @@ export default function LoginPage() {
       return;
     }
     setSocialLoading('facebook');
+    
+    // Safety check: if callback never fires (e.g. popup closed or blocked)
+    const timer = setTimeout(() => {
+      setSocialLoading('');
+    }, 15000);
+
     window.FB.login(
       async (fbResponse) => {
+        clearTimeout(timer);
         if (fbResponse.status === 'connected') {
           try {
             await socialLogin(fbResponse.authResponse.accessToken, 'FACEBOOK');

@@ -8,11 +8,7 @@ const CATEGORIES = [
   'MUSIC_DJ', 'VENUE', 'TRANSPORTATION', 'LIGHTING', 'FLORAL', 'BAKERY', 'ENTERTAINMENT', 'OTHER'
 ];
 
-const CATEGORY_EMOJI = {
-  CATERING: '🍽️', DECORATION: '🌸', PHOTOGRAPHY: '📸', VIDEOGRAPHY: '🎬',
-  MUSIC_DJ: '🎵', VENUE: '🏛️', TRANSPORTATION: '🚗', LIGHTING: '💡',
-  FLORAL: '🌹', BAKERY: '🎂', ENTERTAINMENT: '🎭', OTHER: '✨'
-};
+
 
 const CATEGORY_IMAGES = {
   CATERING: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=500&auto=format&fit=crop',
@@ -111,7 +107,7 @@ export default function VendorsPage() {
               <label className="form-label">Category</label>
               <select className="form-select" value={filters.category}
                 onChange={e => setFilters({ ...filters, category: e.target.value })}>
-                {CATEGORIES.map(c => <option key={c} value={c === 'All' ? '' : c}>{CATEGORY_EMOJI[c] || ''} {c}</option>)}
+                {CATEGORIES.map(c => <option key={c} value={c === 'All' ? '' : c}>{c}</option>)}
               </select>
             </div>
 
@@ -159,7 +155,9 @@ export default function VendorsPage() {
             <div className="loading-container"><div className="spinner"></div></div>
           ) : vendors.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">🔍</div>
+              <div style={{ background: 'var(--bg-elevated)', width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--accent-primary)', border: '1px solid var(--border-subtle)' }}>
+                <Search size={24} />
+              </div>
               <div className="empty-title">No vendors found</div>
               <p>Try adjusting your filters or search terms</p>
             </div>
@@ -174,13 +172,15 @@ export default function VendorsPage() {
                         <span style={{ position: 'absolute', top: '0.85rem', right: '0.85rem' }}
                           className="badge badge-success" title="Verified">✓ Verified</span>
                       )}
-                      <div className="vendor-avatar">
-                        {CATEGORY_EMOJI[v.category] || '✨'}
+                      <div className="vendor-avatar" style={{ fontSize: '1.2rem', fontWeight: 600 }}>
+                        {v.businessName ? v.businessName.charAt(0).toUpperCase() : <Briefcase size={16} />}
                       </div>
                       <div className="vendor-name">{v.businessName}</div>
                       <StarDisplay rating={v.averageRating} />
                       <div className="vendor-meta">
-                        <span className="badge badge-primary">{v.category?.replace(/_/g, ' ')}</span>
+                        <span className="badge badge-primary">
+                          {v.category?.replace(/_/g, ' ')}
+                        </span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                           <MapPin size={12} /> {v.city}
                         </span>

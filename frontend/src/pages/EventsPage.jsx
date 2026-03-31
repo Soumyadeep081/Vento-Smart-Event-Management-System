@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { eventAPI } from '../api/client';
-import { Plus, Edit, Trash2, CalendarDays, MapPin, DollarSign } from 'lucide-react';
+import { Plus, Edit, Trash2, CalendarDays, MapPin, DollarSign, Heart, Cake, Briefcase, PartyPopper, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const EVENT_TYPE_LABELS = {
-  WEDDING: '💍 Wedding', BIRTHDAY_PARTY: '🎂 Birthday Party',
-  CORPORATE_EVENT: '🏢 Corporate', CONFERENCE_SEMINAR: '🎤 Conference',
-  SOCIAL_GATHERING: '🎉 Social', FESTIVAL_CULTURAL: '🎭 Festival', CUSTOM: '✨ Custom'
+  WEDDING: 'Wedding', BIRTHDAY_PARTY: 'Birthday Party',
+  CORPORATE_EVENT: 'Corporate', CONFERENCE_SEMINAR: 'Conference',
+  SOCIAL_GATHERING: 'Social', FESTIVAL_CULTURAL: 'Festival', CUSTOM: 'Custom'
 };
 
 const EVENT_TYPE_IMAGES = {
@@ -49,7 +49,7 @@ function EventFormModal({ event, onClose, onSave }) {
     <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-header">
-          <h3 className="modal-title">{event?.id ? '✏️ Edit Event' : '✦ New Event'}</h3>
+          <h3 className="modal-title">{event?.id ? 'Edit Event' : 'New Event'}</h3>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
         </div>
         <form onSubmit={handleSubmit}>
@@ -150,7 +150,9 @@ export default function EventsPage() {
         <div className="loading-container"><div className="spinner"></div></div>
       ) : events.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">🗓️</div>
+          <div style={{ background: 'var(--bg-elevated)', width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--accent-primary)', border: '1px solid var(--border-subtle)' }}>
+            <CalendarDays size={24} />
+          </div>
           <div className="empty-title">No events yet</div>
           <p>Create your first event to start planning</p>
           <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => setModal('new')}>
@@ -171,8 +173,8 @@ export default function EventsPage() {
                 }}></div>
                 <div className="vendor-card-body">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <span style={{ fontSize: '1.5rem' }}>
-                      {ev.type === 'WEDDING' ? '💍' : ev.type === 'BIRTHDAY_PARTY' ? '🎂' : ev.type === 'CORPORATE_EVENT' ? '🏢' : '🎉'}
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 'var(--radius-sm)', background: 'var(--bg-elevated)', color: 'var(--accent-primary)' }}>
+                      {ev.type === 'WEDDING' ? <Heart size={16} /> : ev.type === 'BIRTHDAY_PARTY' ? <Cake size={16} /> : ev.type === 'CORPORATE_EVENT' ? <Briefcase size={16} /> : <PartyPopper size={16} />}
                     </span>
                     <span className="badge badge-secondary" style={{ fontSize: '0.7rem' }}>
                       {EVENT_TYPE_LABELS[ev.type] || ev.type}

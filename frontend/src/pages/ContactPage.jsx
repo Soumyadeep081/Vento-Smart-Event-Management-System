@@ -1,3 +1,5 @@
+import { MapPin, Mail } from 'lucide-react';
+
 export default function ContactPage() {
   return (
     <div className="container page-content">
@@ -8,7 +10,9 @@ export default function ContactPage() {
       
       <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         <div className="card card-elevated" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📍</div>
+          <div style={{ background: 'var(--bg-elevated)', width: 64, height: 64, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--accent-primary)', border: '1px solid var(--border-subtle)' }}>
+            <MapPin size={32} />
+          </div>
           <h3 style={{ marginBottom: '0.5rem' }}>Our Office</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
             Alpha 2, Greater Noida<br />
@@ -17,7 +21,9 @@ export default function ContactPage() {
         </div>
 
         <div className="card card-elevated" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✉️</div>
+          <div style={{ background: 'var(--bg-elevated)', width: 64, height: 64, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--accent-primary)', border: '1px solid var(--border-subtle)' }}>
+            <Mail size={32} />
+          </div>
           <h3 style={{ marginBottom: '0.5rem' }}>Email Support</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
             Reach out to our team at:<br />

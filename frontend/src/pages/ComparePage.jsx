@@ -81,9 +81,8 @@ export default function ComparePage() {
       ) : (
         <>
           {/* Controls */}
-          <div className="glass-card" style={{ marginBottom: '2rem', display: 'flex', gap: '2rem', flexWrap: 'wrap', backgroundImage: 'url("https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop")', backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)' }}></div>
-            <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '2rem', flexWrap: 'wrap', width: '100%' }}>
+          <div className="card" style={{ marginBottom: '2rem', display: 'flex', gap: '2rem', flexWrap: 'wrap', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', width: '100%' }}>
               {user?.role === 'USER' && (
               <div style={{ flex: 1, minWidth: 250 }}>
                 <label className="form-label">Active Event Context</label>
@@ -130,7 +129,7 @@ export default function ComparePage() {
                       const isBestMatch = Math.max(...Object.values(comparison).map(x => x.totalScore)) === analysis.totalScore;
                       return (
                         <th key={v.id} className={isBestMatch ? 'best' : ''} style={{ position: 'relative' }}>
-                          {isBestMatch && <div className="badge badge-primary" style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)' }}>🌟 Best Match</div>}
+                          {isBestMatch && <div className="badge badge-best-match" style={{ position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: 'var(--radius-full)' }}><Star size={14} fill="currentColor" /> BEST MATCH</div>}
                           <div style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{v.businessName}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal', marginBottom: '0.5rem' }}>{v.category}</div>
                           <button className="btn btn-ghost btn-sm" onClick={() => removeVendor(v.id)}><Minus size={14} /> Remove</button>
@@ -195,8 +194,8 @@ export default function ComparePage() {
               </table>
             </div>
           ) : (
-            <div className="empty-state">
-              <div className="empty-icon">⚖️</div>
+            <div className="empty-state" style={{ padding: '6rem 2rem' }}>
+              <Plus size={32} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
               <div className="empty-title">Select vendors to compare</div>
               <p>Search and add up to 4 vendors to see a side-by-side breakdown.</p>
             </div>

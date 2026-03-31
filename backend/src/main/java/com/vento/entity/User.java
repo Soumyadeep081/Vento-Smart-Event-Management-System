@@ -58,9 +58,18 @@ public class User {
     @Column(nullable = true)
     private String providerId;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean phoneVerified = false;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    public String getAccountId() {
+        if (id == null) return "N/A";
+        return String.format("VNT-%06d", id);
+    }
 
     public enum Role {
         USER, VENDOR, ADMIN

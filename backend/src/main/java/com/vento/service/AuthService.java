@@ -66,7 +66,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
 
-        if (user.getPassword() == null) {
+        if (user.getProvider() != null && user.getProvider() != User.AuthProvider.LOCAL) {
             throw new BadRequestException("This account uses social login (Google/Facebook). Please sign in with your social account.");
         }
 
@@ -99,10 +99,30 @@ public class AuthService {
     // ── Google ──────────────────────────────────────────────────────────────
 
     private AuthDto.AuthResponse handleGoogleLogin(AuthDto.SocialLoginRequest request) {
-        GoogleIdToken.Payload payload = verifyGoogleIdToken(request.getToken());
-        String email = payload.getEmail();
-        String name = (String) payload.get("name");
-        String sub = payload.getSubject(); // Google's unique user ID
+        String token = request.getToken();
+        String email, name, sub;
+
+        if (token.split("\\.").length == 3) {
+            GoogleIdToken.Payload payload = verifyGoogleIdToken(token);
+            email = payload.getEmail();
+            name = (String) payload.get("name");
+            sub = payload.getSubject();
+        } else {
+            String url = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + token;
+            RestTemplate restTemplate = new RestTemplate();
+            try {
+                Map<?, ?> response = restTemplate.getForObject(url, Map.class);
+                if (response == null || response.containsKey("error")) {
+                    throw new BadRequestException("Invalid Google access token");
+                }
+                email = (String) response.get("email");
+                name = (String) response.get("name");
+                sub = (String) response.get("sub");
+            } catch (Exception e) {
+                log.error("Google access token verification failed", e);
+                throw new BadRequestException("Google access token verification failed: " + e.getMessage());
+            }
+        }
 
         User user = findOrCreateSocialUser(email, name, sub, User.AuthProvider.GOOGLE, request.getRole());
         return new AuthDto.AuthResponse(generateToken(user), user);
@@ -178,11 +198,11 @@ public class AuthService {
             return user;
         }
 
-        // Create new user
+        // Create new user (Generate a random un-guessable password to satisfy DB NOT NULL constraint)
         User newUser = User.builder()
                 .name(name != null ? name : email.split("@")[0])
                 .email(email)
-                .password(null) // No password for social users
+                .password(java.util.UUID.randomUUID().toString()) // No real password for social users
                 .role(requestedRole != null ? requestedRole : User.Role.USER)
                 .provider(provider)
                 .providerId(providerId)

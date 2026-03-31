@@ -101,4 +101,11 @@ export const adminAPI = {
   disableUser: (id) => API.delete(`/admin/users/${id}`),
 };
 
+// ===== Users =====
+export const userAPI = {
+  getProfile: () => API.get('/users/me'),
+  updateProfile: (data) => API.put('/users/me', data),
+  verifyPhone: () => API.patch('/users/verify-phone'),
+};
+
 export default API;
