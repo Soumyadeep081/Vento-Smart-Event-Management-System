@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { vendorAPI } from '../api/client';
-import { Search, SlidersHorizontal, Star, MapPin, Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, SlidersHorizontal, Star, MapPin, Briefcase, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react';
 
 const CATEGORIES = [
   'All', 'CATERING', 'DECORATION', 'PHOTOGRAPHY', 'VIDEOGRAPHY',
@@ -168,14 +168,10 @@ export default function VendorsPage() {
                   <div className="vendor-card">
                     <div className="vendor-card-header" style={{ height: '140px', backgroundImage: `url(${CATEGORY_IMAGES[v.category] || CATEGORY_IMAGES.OTHER})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
                     <div className="vendor-card-body">
-                      {v.verified && (
-                        <span style={{ position: 'absolute', top: '0.85rem', right: '0.85rem' }}
-                          className="badge badge-success" title="Verified">✓ Verified</span>
-                      )}
-                      <div className="vendor-avatar" style={{ fontSize: '1.2rem', fontWeight: 600 }}>
-                        {v.businessName ? v.businessName.charAt(0).toUpperCase() : <Briefcase size={16} />}
+                      <div className="vendor-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {v.businessName}
+                        {v.verified && <BadgeCheck size={18} fill="#10B981" color="#ffffff" title="Verified" />}
                       </div>
-                      <div className="vendor-name">{v.businessName}</div>
                       <StarDisplay rating={v.averageRating} />
                       <div className="vendor-meta">
                         <span className="badge badge-primary">

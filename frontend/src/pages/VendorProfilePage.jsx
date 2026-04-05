@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { vendorAPI, serviceAPI, reviewAPI, bookingAPI } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { MapPin, Briefcase, Star, CalendarDays, Plus, Edit, Trash2 } from 'lucide-react';
+import { MapPin, Briefcase, Star, CalendarDays, Plus, Edit, Trash2, BadgeCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CATEGORY_IMAGES = {
@@ -152,17 +152,6 @@ export default function VendorProfilePage({ isMyProfile = false }) {
       <div style={{ height: 320, backgroundImage: `url(${CATEGORY_IMAGES[vendor.category] || CATEGORY_IMAGES.OTHER})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%)' }}></div>
         <div className="container" style={{ height: '100%', position: 'relative' }}>
-          <div style={{
-            position: 'absolute', bottom: '-40px', left: '1.5rem',
-            width: 120, height: 120, borderRadius: 'var(--radius-lg)',
-            background: 'var(--gradient-primary)', border: '4px solid var(--bg-primary)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '3.5rem', boxShadow: 'var(--shadow-md)', zIndex: 10
-          }}>
-            <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff' }}>
-              {vendor.businessName ? vendor.businessName.charAt(0).toUpperCase() : <Briefcase size={40} />}
-            </div>
-          </div>
         </div>
       </div>
 
@@ -170,13 +159,25 @@ export default function VendorProfilePage({ isMyProfile = false }) {
         <div className="sidebar-layout">
           {/* Main Content */}
           <div>
-            <div style={{ paddingLeft: '9rem', marginBottom: '3rem' }}>
+            <div style={{ marginBottom: '3rem' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                  <h1 style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>
-                    {vendor.businessName}
-                  </h1>
-                  <span className="badge badge-primary">{vendor.category?.replace(/_/g, ' ')}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                  <div style={{
+                    width: 72, height: 72, borderRadius: 'var(--radius-md)',
+                    background: 'var(--gradient-primary)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '2rem', fontWeight: 800, color: '#fff',
+                    flexShrink: 0
+                  }}>
+                    {vendor.businessName ? vendor.businessName.charAt(0).toUpperCase() : <Briefcase size={28} />}
+                  </div>
+                  <div>
+                    <h1 style={{ fontSize: '2.2rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {vendor.businessName}
+                      {vendor.verified && <BadgeCheck size={28} fill="#10B981" color="#ffffff" title="Verified" />}
+                    </h1>
+                    <span className="badge badge-primary">{vendor.category?.replace(/_/g, ' ')}</span>
+                  </div>
                 </div>
                 {isMyProfile && (
                   <button className="btn btn-secondary"><Edit size={16} /> Edit Profile</button>

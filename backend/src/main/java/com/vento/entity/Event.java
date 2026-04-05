@@ -59,6 +59,9 @@ public class Event {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Booking> bookings;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

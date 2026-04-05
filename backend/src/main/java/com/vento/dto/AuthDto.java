@@ -52,6 +52,23 @@ public class AuthDto {
     }
 
     @Data
+    public static class VerifyOtpRequest {
+        @NotBlank
+        @Email
+        private String email;
+
+        @NotBlank
+        private String otp;
+    }
+
+    @Data
+    public static class ResendOtpRequest {
+        @NotBlank
+        @Email
+        private String email;
+    }
+
+    @Data
     public static class AuthResponse {
         private String token;
         private String email;
@@ -61,6 +78,7 @@ public class AuthDto {
         private String accountId;
         private String phone;
         private boolean phoneVerified;
+        private boolean requireVerification;
 
         public AuthResponse(String token, User user) {
             this.token = token;
@@ -71,6 +89,11 @@ public class AuthDto {
             this.accountId = user.getAccountId();
             this.phone = user.getPhone();
             this.phoneVerified = user.isPhoneVerified();
+        }
+
+        public AuthResponse(String email, boolean requireVerification) {
+            this.email = email;
+            this.requireVerification = requireVerification;
         }
     }
 }

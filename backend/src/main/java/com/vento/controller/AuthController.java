@@ -35,4 +35,17 @@ public class AuthController {
     public ResponseEntity<AuthDto.AuthResponse> socialLogin(@Valid @RequestBody AuthDto.SocialLoginRequest request) {
         return ResponseEntity.ok(authService.socialLogin(request));
     }
+
+    @PostMapping("/verify-otp")
+    @Operation(summary = "Verify OTP and receive JWT token")
+    public ResponseEntity<AuthDto.AuthResponse> verifyOtp(@Valid @RequestBody AuthDto.VerifyOtpRequest request) {
+        return ResponseEntity.ok(authService.verifyOtp(request));
+    }
+
+    @PostMapping("/resend-otp")
+    @Operation(summary = "Resend OTP for email verification")
+    public ResponseEntity<Void> resendOtp(@Valid @RequestBody AuthDto.ResendOtpRequest request) {
+        authService.resendOtp(request);
+        return ResponseEntity.ok().build();
+    }
 }

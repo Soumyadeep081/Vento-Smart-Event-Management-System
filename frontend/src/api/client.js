@@ -30,6 +30,8 @@ export const authAPI = {
   register: (data) => API.post('/auth/register', data),
   login: (data) => API.post('/auth/login', data),
   socialLogin: (token, provider, role) => API.post('/auth/social-login', { token, provider, role }),
+  verifyOtp: (data) => API.post('/auth/verify-otp', data),
+  resendOtp: (data) => API.post('/auth/resend-otp', data),
 };
 
 // ===== Events =====

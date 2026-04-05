@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import EventsPage from './pages/EventsPage';
+import EventDetailPage from './pages/EventDetailPage';
 import VendorsPage from './pages/VendorsPage';
 import VendorProfilePage from './pages/VendorProfilePage';
 import ComparePage from './pages/ComparePage';
@@ -39,7 +40,7 @@ function App() {
             {/* Protected Routes */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
-            <Route path="/events/:id" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+            <Route path="/events/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
             <Route path="/compare" element={<ProtectedRoute><ComparePage /></ProtectedRoute>} />
             <Route path="/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
             <Route path="/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />

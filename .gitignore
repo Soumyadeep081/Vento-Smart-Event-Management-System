@@ -1,5 +1,34 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-# Environment-dependent path to Maven home directory
-/mavenHomeManager.xml
+# =====================
+# Java / Spring Boot
+# =====================
+/build/
+*.jar
+*.war
+*.class
+.gradle/
+
+# =====================
+# Node / Frontend
+# =====================
+node_modules/
+dist/
+.env
+
+# =====================
+# IDE files
+# =====================
+.idea/
+*.iml
+.vscode/
+
+# =====================
+# OS files
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# Logs & misc
+# =====================
+*.log
+coverage/

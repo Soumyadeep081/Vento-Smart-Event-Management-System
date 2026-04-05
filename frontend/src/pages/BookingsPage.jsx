@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { Check, X, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { useNavigate } from 'react-router-dom';
+
 function StatusBadge({ status }) {
   const map = {
     CONFIRMED: 'badge-success', PENDING: 'badge-warning',
@@ -14,6 +16,7 @@ function StatusBadge({ status }) {
 
 export default function BookingsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,6 +48,18 @@ export default function BookingsPage() {
     } catch (err) { toast.error(err.response?.data?.message || 'Cancel failed'); }
   };
 
+  const handleCardClick = (e, b) => {
+    // Prevent navigation if clicking on buttons
+    if (e.target.closest('button')) return;
+    
+    if (user?.role === 'USER') {
+      navigate(`/events/${b.eventId}`);
+    } else {
+      // VENDOR
+      navigate(`/vendor-profile`);
+    }
+  };
+
   if (loading) return <div className="loading-container"><div className="spinner"></div></div>;
 
   return (
@@ -65,7 +80,18 @@ export default function BookingsPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {bookings.map(b => (
-            <div key={b.id} className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div 
+              key={b.id} 
+              className="card booking-card" 
+              onClick={(e) => handleCardClick(e, b)}
+              style={{ 
+                display: 'flex', flexWrap: 'wrap', gap: '1.5rem', 
+                alignItems: 'center', justifyContent: 'space-between',
+                cursor: 'pointer', transition: 'box-shadow 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}
+            >
               <div style={{ flex: 1, minWidth: 250 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
                   <h3 style={{ fontSize: '1.15rem', margin: 0 }}>{b.serviceName}</h3>
@@ -82,7 +108,7 @@ export default function BookingsPage() {
               </div>
 
               <div style={{ textAlign: 'right', minWidth: 150 }}>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '1rem' }}>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem' }}>
                   ₹{b.cost?.toLocaleString()}
                 </div>
 

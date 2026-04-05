@@ -62,6 +62,15 @@ public class User {
     @Builder.Default
     private boolean phoneVerified = false;
 
+    @Column(columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean emailVerified = false;
+
+    @Column(length = 6)
+    private String verificationOtp;
+
+    private LocalDateTime verificationOtpExpiry;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

@@ -1,25 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth, GOOGLE_CLIENT_ID } from '../context/AuthContext';
-import { Eye, EyeOff, CalendarDays, Store, Wind } from 'lucide-react';
+import { Eye, EyeOff, Wind, Users, Sparkles, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const ROLES = [
-  {
-    value: 'USER',
-    icon: <CalendarDays size={20} />,
-    label: 'Event Planner',
-    desc: 'Plan and manage your events',
-    color: '#ff6b6b',
-  },
-  {
-    value: 'VENDOR',
-    icon: <Store size={20} />,
-    label: 'Vendor',
-    desc: 'Offer services to planners',
-    color: '#ffb169',
-  },
-];
 
 export default function RegisterPage() {
   const [sp] = useSearchParams();
@@ -30,22 +13,19 @@ export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [socialLoading, setSocialLoading] = useState('');
-  const { register, socialLogin, loading } = useAuth();
+  const [step, setStep] = useState('form'); // 'form' | 'otp'
+  const [verifyEmail, setVerifyEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const { register, socialLogin, verifyOtp, resendOtp, loading } = useAuth();
   const navigate = useNavigate();
 
-  // ── Google Sign-Up ────────────────────────────────────────────────────
   const handleGoogleSignUp = () => {
     if (!window.google) {
       toast.error('Google SDK not loaded yet. Please try again.');
       return;
     }
     setSocialLoading('google');
-
-    // Safety check: if callback never fires (e.g. popup closed or blocked)
-    const timer = setTimeout(() => {
-      setSocialLoading('');
-    }, 15000);
-
+    const timer = setTimeout(() => { setSocialLoading(''); }, 15000);
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: 'email profile openid',
@@ -59,9 +39,7 @@ export default function RegisterPage() {
           } catch (err) {
             setError(err.response?.data?.message || 'Google sign-up failed');
             toast.error('Google sign-up failed');
-          } finally {
-            setSocialLoading('');
-          }
+          } finally { setSocialLoading(''); }
         }
       },
       error_callback: () => {
@@ -73,35 +51,13 @@ export default function RegisterPage() {
     client.requestAccessToken();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (form.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    try {
-      await register(form);
-      toast.success('Welcome to Vento!');
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
-    }
-  };
-
-  // ── Facebook Sign-Up ────────────────────────────────────────────────────
   const handleFacebookSignUp = () => {
     if (!window.FB) {
       toast.error('Facebook SDK not loaded yet. Please try again.');
       return;
     }
     setSocialLoading('facebook');
-
-    // Safety check: if callback never fires (e.g. popup closed or blocked)
-    const timer = setTimeout(() => {
-      setSocialLoading('');
-    }, 15000);
-
+    const timer = setTimeout(() => { setSocialLoading(''); }, 15000);
     window.FB.login(
       async (fbResponse) => {
         clearTimeout(timer);
@@ -113,9 +69,7 @@ export default function RegisterPage() {
           } catch (err) {
             setError(err.response?.data?.message || 'Facebook sign-up failed');
             toast.error('Facebook sign-up failed');
-          } finally {
-            setSocialLoading('');
-          }
+          } finally { setSocialLoading(''); }
         } else {
           setSocialLoading('');
           toast('Facebook sign-up was cancelled.');
@@ -125,7 +79,54 @@ export default function RegisterPage() {
     );
   };
 
-  const selectedRole = ROLES.find(r => r.value === form.role);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    try {
+      const res = await register(form);
+      if (res && res.requireVerification) {
+        setVerifyEmail(res.email);
+        setStep('otp');
+        toast.success(`Verification code sent to ${res.email}`);
+      } else {
+        toast.success('Welcome to Vento!');
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed');
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!otp || otp.length < 6) {
+      setError('Please enter a valid 6-digit OTP');
+      return;
+    }
+    try {
+      await verifyOtp(verifyEmail, otp);
+      toast.success('Email verified! Welcome to Vento!');
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid OTP');
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      await resendOtp(verifyEmail);
+      toast.success('New OTP sent to your email');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to resend OTP');
+    }
+  };
+
+  const roleLabel = form.role === 'USER' ? 'Planner' : 'Vendor';
 
   return (
     <div style={{
@@ -135,60 +136,112 @@ export default function RegisterPage() {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Decorative blobs */}
-      <div style={{
-        position: 'absolute', top: '-15%', left: '-10%',
-        width: '50vw', height: '50vw', maxWidth: 600,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,177,105,0.1) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '-20%', right: '-10%',
-        width: '45vw', height: '45vw', maxWidth: 500,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,107,107,0.1) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
+      {/* Left branding panel */}
+      <div className="register-brand-panel" style={{
+        flex: '0 0 42%',
+        background: 'linear-gradient(150deg, #ff6b6b 0%, #ffb169 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        padding: '4rem 3.5rem',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: '-80px', right: '-80px',
+          width: 300, height: 300, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.08)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-60px', left: '-60px',
+          width: 250, height: 250, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.06)',
+        }} />
 
-      {/* Main container */}
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <div style={{
+            fontFamily: 'var(--font-heading)', fontSize: '2rem',
+            fontWeight: 900, color: '#fff', letterSpacing: '-1px',
+            marginBottom: '3rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+          }}>
+            <Wind size={28} strokeWidth={2.5} />
+            vento
+          </div>
+        </Link>
+
+        <h2 style={{
+          fontFamily: 'var(--font-heading)', color: '#fff',
+          fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 800,
+          lineHeight: 1.15, marginBottom: '1.25rem', letterSpacing: '-0.5px',
+        }}>
+          Your events,<br />elevated.
+        </h2>
+        <p style={{
+          color: 'rgba(255,255,255,0.8)', fontSize: '1rem', lineHeight: 1.7,
+          maxWidth: 320, marginBottom: '2.5rem',
+        }}>
+          Whether you're planning your dream event or growing your vendor business — Vento makes it effortless.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {[
+            { icon: <Users size={16} strokeWidth={2.5} />, text: '2,000+ verified vendors' },
+            { icon: <Sparkles size={16} strokeWidth={2.5} />, text: 'AI-matched recommendations' },
+            { icon: <Shield size={16} strokeWidth={2.5} />, text: 'Secure booking & payments' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', flexShrink: 0,
+              }}>{item.icon}</div>
+              <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem', fontWeight: 500 }}>
+                {item.text}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right form panel */}
       <div style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '3rem 1.5rem',
+        padding: '3rem 2rem',
       }}>
-        <div style={{ width: '100%', maxWidth: 500 }}>
-
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ width: '100%', maxWidth: 440 }}>
+          {/* Mobile logo */}
+          <div className="register-mobile-logo" style={{ textAlign: 'center', marginBottom: '2rem', display: 'none' }}>
             <Link to="/" style={{
               fontFamily: 'var(--font-heading)', fontSize: '1.9rem', fontWeight: 900,
               color: 'var(--accent-primary)', letterSpacing: '-1px', textDecoration: 'none',
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-              marginBottom: '1rem',
             }}>
               <Wind size={24} strokeWidth={2.5} />
               vento
             </Link>
+          </div>
+
+          <div style={{ marginBottom: '2rem' }}>
             <h1 style={{
-              fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 800,
+              fontFamily: 'var(--font-heading)', fontSize: '1.9rem', fontWeight: 800,
               color: 'var(--text-primary)', letterSpacing: '-0.5px', marginBottom: '0.4rem',
             }}>
-              Create your account
+              Get started
             </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-              Join thousands of event planners and vendors
+              Create your free account in seconds
             </p>
           </div>
 
-          {/* Social Sign Up Buttons */}
-          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem' }}>
+          {/* Social buttons */}
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <button
-              type="button"
-              id="google-signup-btn"
-              onClick={handleGoogleSignUp}
+              type="button" id="google-signup-btn" onClick={handleGoogleSignUp}
               disabled={!!socialLoading || loading}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -216,9 +269,7 @@ export default function RegisterPage() {
             </button>
 
             <button
-              type="button"
-              id="facebook-signup-btn"
-              onClick={handleFacebookSignUp}
+              type="button" id="facebook-signup-btn" onClick={handleFacebookSignUp}
               disabled={!!socialLoading || loading}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -245,7 +296,7 @@ export default function RegisterPage() {
 
           {/* Divider */}
           <div style={{
-            display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem',
+            display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem',
           }}>
             <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
@@ -254,56 +305,100 @@ export default function RegisterPage() {
             <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
           </div>
 
-          {/* Form Card */}
-          <div style={{
+          {step === 'otp' ? (
+            <div style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-xl)', padding: '2rem',
+              boxShadow: 'var(--shadow-md)',
+            }}>
+              <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', fontFamily: 'var(--font-heading)' }}>Verify your email</h2>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                We've sent a 6-digit code to <strong>{verifyEmail}</strong>. Please enter it below.
+              </p>
+              
+              {error && <div className="alert alert-error">{error}</div>}
+
+              <form onSubmit={handleVerifyOtp}>
+                <div className="form-group">
+                  <label className="form-label">Verification Code</label>
+                  <input
+                    type="text" className="form-input" placeholder="000000"
+                    maxLength={6}
+                    value={otp}
+                    onChange={e => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                    required
+                    style={{ fontSize: '1.5rem', letterSpacing: '8px', textAlign: 'center' }}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: '100%', marginTop: '1rem', padding: '0.85rem', fontSize: '1rem' }}
+                  disabled={loading}
+                >
+                  {loading ? 'Verifying…' : 'Verify Email'}
+                </button>
+              </form>
+              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <button 
+                  type="button" 
+                  onClick={handleResendOtp}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontWeight: '600', cursor: 'pointer' }}
+                  disabled={loading}
+                >
+                  Resend code
+                </button>
+                <div style={{ marginTop: '1rem', fontSize: '0.85rem' }}>
+                  <button type="button" onClick={() => setStep('form')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'underline' }}>
+                    Use a different email
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{
             background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-xl)', padding: '2rem',
             boxShadow: 'var(--shadow-md)',
           }}>
             {error && <div className="alert alert-error">{error}</div>}
 
-            {/* Role Selector */}
+            {/* Role toggle — clean segmented control */}
             <div className="form-group">
-              <label className="form-label">I am a…</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                {ROLES.map(r => {
-                  const isSelected = form.role === r.value;
+              <label className="form-label">Account type</label>
+              <div style={{
+                display: 'flex',
+                background: 'var(--bg-elevated)',
+                borderRadius: 'var(--radius-md)',
+                padding: '3px',
+                border: '1px solid var(--border-subtle)',
+              }}>
+                {[
+                  { value: 'USER', label: 'Event Planner' },
+                  { value: 'VENDOR', label: 'Vendor' },
+                ].map(r => {
+                  const active = form.role === r.value;
                   return (
                     <button
                       key={r.value}
                       type="button"
                       onClick={() => setForm({ ...form, role: r.value })}
                       style={{
-                        padding: '1rem 1.25rem',
-                        borderRadius: 'var(--radius-lg)',
-                        background: isSelected
-                          ? `linear-gradient(135deg, ${r.color}18 0%, ${r.color}0a 100%)`
-                          : 'var(--bg-elevated)',
-                        border: `2px solid ${isSelected ? r.color : 'var(--border-subtle)'}`,
+                        flex: 1,
+                        padding: '0.55rem 1rem',
+                        borderRadius: 'calc(var(--radius-md) - 2px)',
+                        border: 'none',
                         cursor: 'pointer',
-                        textAlign: 'left',
-                        transition: 'all 0.2s',
-                        boxShadow: isSelected ? `0 0 0 4px ${r.color}18` : 'none',
+                        fontFamily: 'var(--font-body)',
+                        fontWeight: active ? 700 : 500,
+                        fontSize: '0.88rem',
+                        color: active ? 'var(--text-primary)' : 'var(--text-muted)',
+                        background: active ? 'var(--bg-card)' : 'transparent',
+                        boxShadow: active ? '0 1px 3px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)' : 'none',
+                        transition: 'all 0.15s ease',
                       }}
                     >
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                        background: isSelected ? `${r.color}22` : 'var(--bg-glass)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: isSelected ? r.color : 'var(--text-muted)',
-                        marginBottom: '0.6rem',
-                        transition: 'all 0.2s',
-                      }}>
-                        {r.icon}
-                      </div>
-                      <div style={{
-                        fontWeight: 700, fontSize: '0.93rem',
-                        color: isSelected ? r.color : 'var(--text-primary)',
-                        marginBottom: '0.2rem',
-                      }}>{r.label}</div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                        {r.desc}
-                      </div>
+                      {r.label}
                     </button>
                   );
                 })}
@@ -311,10 +406,9 @@ export default function RegisterPage() {
             </div>
 
             <form onSubmit={handleSubmit}>
-              {/* Name + Phone row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group">
-                  <label className="form-label">Full Name</label>
+                  <label className="form-label">Full name</label>
                   <input
                     type="text" className="form-input" placeholder="Alex Johnson"
                     value={form.name}
@@ -323,7 +417,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Phone <span style={{ color: 'var(--text-muted)', textTransform: 'none' }}>(optional)</span></label>
+                  <label className="form-label">Phone <span style={{ color: 'var(--text-muted)', textTransform: 'none', fontWeight: 400 }}>(optional)</span></label>
                   <input
                     type="tel" className="form-input" placeholder="+91 98765 43210"
                     value={form.phone}
@@ -333,7 +427,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Email Address</label>
+                <label className="form-label">Email</label>
                 <input
                   type="email" className="form-input" placeholder="you@example.com"
                   value={form.email}
@@ -348,7 +442,7 @@ export default function RegisterPage() {
                   <input
                     type={showPass ? 'text' : 'password'}
                     className="form-input"
-                    placeholder="At least 6 characters"
+                    placeholder="Min. 6 characters"
                     value={form.password}
                     onChange={e => setForm({ ...form, password: e.target.value })}
                     required
@@ -366,7 +460,6 @@ export default function RegisterPage() {
                     {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {/* Password strength hint */}
                 {form.password.length > 0 && (
                   <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
                     {[...Array(4)].map((_, i) => (
@@ -388,16 +481,17 @@ export default function RegisterPage() {
                 style={{ width: '100%', marginTop: '1.5rem', padding: '0.85rem', fontSize: '1rem' }}
                 disabled={loading}
               >
-                {loading ? 'Creating account…' : `Create ${selectedRole?.label || ''} Account`}
+                {loading ? 'Creating account…' : `Create ${roleLabel} Account`}
               </button>
             </form>
           </div>
+          )}
 
           <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '1rem', lineHeight: 1.6 }}>
-            By creating an account, you agree to our{' '}
-            <Link to="/terms" style={{ color: 'var(--accent-primary)' }}>Terms of Service</Link>
+            By signing up you agree to our{' '}
+            <Link to="/terms" style={{ color: 'var(--accent-primary)' }}>Terms</Link>
             {' '}and{' '}
-            <Link to="/privacy" style={{ color: 'var(--accent-primary)' }}>Privacy Policy</Link>
+            <Link to="/privacy" style={{ color: 'var(--accent-primary)' }}>Privacy Policy</Link>.
           </p>
 
           <p style={{ textAlign: 'center', marginTop: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.93rem' }}>
@@ -406,7 +500,12 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
+
       <style>{`
+        @media (max-width: 768px) {
+          .register-brand-panel { display: none !important; }
+          .register-mobile-logo { display: block !important; }
+        }
         @keyframes spin {
           to { transform: rotate(360deg); }
         }

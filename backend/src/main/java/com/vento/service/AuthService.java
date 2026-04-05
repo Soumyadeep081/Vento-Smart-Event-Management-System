@@ -13,6 +13,7 @@ import com.vento.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +39,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     @Value("${google.client-id}")
     private String googleClientId;
@@ -47,6 +49,8 @@ public class AuthService {
             throw new BadRequestException("Email already registered: " + request.getEmail());
         }
 
+        String otp = generateOtp();
+
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -54,12 +58,15 @@ public class AuthService {
                 .role(request.getRole() != null ? request.getRole() : User.Role.USER)
                 .phone(request.getPhone())
                 .provider(User.AuthProvider.LOCAL)
+                .emailVerified(false)
+                .verificationOtp(otp)
+                .verificationOtpExpiry(java.time.LocalDateTime.now().plusMinutes(10))
                 .build();
 
-        user = userRepository.save(user);
+        userRepository.save(user);
+        emailService.sendVerificationEmail(user.getEmail(), otp);
 
-        String token = generateToken(user);
-        return new AuthDto.AuthResponse(token, user);
+        return new AuthDto.AuthResponse(user.getEmail(), true);
     }
 
     public AuthDto.AuthResponse login(AuthDto.LoginRequest request) {
@@ -80,6 +87,53 @@ public class AuthService {
 
         String token = generateToken(user);
         return new AuthDto.AuthResponse(token, user);
+    }
+
+    public AuthDto.AuthResponse verifyOtp(AuthDto.VerifyOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.isEmailVerified()) {
+            throw new BadRequestException("Email is already verified. Please login.");
+        }
+
+        if (user.getVerificationOtp() == null || !user.getVerificationOtp().equals(request.getOtp())) {
+            throw new BadRequestException("Invalid OTP");
+        }
+
+        if (user.getVerificationOtpExpiry() != null && user.getVerificationOtpExpiry().isBefore(java.time.LocalDateTime.now())) {
+            throw new BadRequestException("OTP has expired. Please request a new one.");
+        }
+
+        user.setEmailVerified(true);
+        user.setVerificationOtp(null);
+        user.setVerificationOtpExpiry(null);
+        userRepository.save(user);
+
+        String token = generateToken(user);
+        return new AuthDto.AuthResponse(token, user);
+    }
+
+    public void resendOtp(AuthDto.ResendOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.isEmailVerified()) {
+            throw new BadRequestException("Email is already verified. Please login.");
+        }
+
+        String otp = generateOtp();
+        user.setVerificationOtp(otp);
+        user.setVerificationOtpExpiry(java.time.LocalDateTime.now().plusMinutes(10));
+        userRepository.save(user);
+
+        emailService.sendVerificationEmail(user.getEmail(), otp);
+    }
+
+    private String generateOtp() {
+        java.util.Random rnd = new java.util.Random();
+        int number = rnd.nextInt(999999);
+        return String.format("%06d", number);
     }
 
     /**
@@ -206,6 +260,7 @@ public class AuthService {
                 .role(requestedRole != null ? requestedRole : User.Role.USER)
                 .provider(provider)
                 .providerId(providerId)
+                .emailVerified(true)
                 .build();
 
         return userRepository.save(newUser);

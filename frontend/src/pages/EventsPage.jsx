@@ -11,13 +11,13 @@ const EVENT_TYPE_LABELS = {
 };
 
 const EVENT_TYPE_IMAGES = {
-  WEDDING: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&auto=format&fit=crop',
-  BIRTHDAY_PARTY: 'https://images.unsplash.com/photo-1530103862676-de3c9de59f9f?w=500&auto=format&fit=crop',
-  CORPORATE_EVENT: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=500&auto=format&fit=crop',
-  CONFERENCE_SEMINAR: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop',
-  SOCIAL_GATHERING: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=500&auto=format&fit=crop',
-  FESTIVAL_CULTURAL: 'https://images.unsplash.com/photo-1533174000276-2aaa48182cdb?w=500&auto=format&fit=crop',
-  CUSTOM: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop'
+  WEDDING: '/images/events/wedding.png',
+  BIRTHDAY_PARTY: '/images/events/birthday.png',
+  CORPORATE_EVENT: '/images/events/corporate.png',
+  CONFERENCE_SEMINAR: '/images/events/conference.png',
+  SOCIAL_GATHERING: '/images/events/social.png',
+  FESTIVAL_CULTURAL: '/images/events/festival.png',
+  CUSTOM: '/images/events/custom.png'
 };
 
 function EventFormModal({ event, onClose, onSave }) {
@@ -41,7 +41,20 @@ function EventFormModal({ event, onClose, onSave }) {
       }
       onClose();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save event');
+      const status = err.response?.status;
+      const data = err.response?.data;
+      let errorMsg = 'Failed to save event';
+      if (status === 401 || status === 403) {
+        errorMsg = 'Session expired. Please log in again.';
+      } else if (data?.message) {
+        errorMsg = data.message;
+      } else if (data?.errors) {
+        errorMsg = Object.values(data.errors).join(', ');
+      } else if (status) {
+        errorMsg = `Server error (${status}). Please try again.`;
+      }
+      console.error('Event save error:', { status, data, err });
+      toast.error(errorMsg);
     } finally { setSaving(false); }
   };
 
@@ -110,18 +123,26 @@ export default function EventsPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null); // null | 'new' | {event}
+  const [deleting, setDeleting] = useState(null); // event id being deleted
 
   useEffect(() => {
     eventAPI.getMyEvents().then(r => setEvents(r.data)).finally(() => setLoading(false));
   }, []);
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this event? All associated bookings may be affected.')) return;
+    if (!window.confirm('Delete this event? All associated bookings may be affected.')) return;
+    setDeleting(id);
     try {
       await eventAPI.delete(id);
       setEvents(ev => ev.filter(e => e.id !== id));
       toast.success('Event deleted');
-    } catch { toast.error('Failed to delete'); }
+    } catch (err) {
+      console.error('Delete error:', err);
+      const msg = err.response?.data?.message || 'Failed to delete event. It may have active bookings.';
+      toast.error(msg);
+    } finally {
+      setDeleting(null);
+    }
   };
 
   const handleSave = (data, action) => {
@@ -163,14 +184,19 @@ export default function EventsPage() {
         <div className="grid-3">
           {events.map(ev => {
             const pct = budgetPercent(ev);
+            const imgSrc = EVENT_TYPE_IMAGES[ev.type] || EVENT_TYPE_IMAGES.CUSTOM;
             return (
               <div key={ev.id} className="vendor-card">
-                <div className="vendor-card-header" style={{
-                  height: '140px',
-                  backgroundImage: `url(${EVENT_TYPE_IMAGES[ev.type] || EVENT_TYPE_IMAGES.CUSTOM})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}></div>
+                <div style={{ height: '140px', overflow: 'hidden' }}>
+                  <img
+                    src={imgSrc}
+                    alt={EVENT_TYPE_LABELS[ev.type] || 'Event'}
+                    style={{
+                      width: '100%', height: '100%',
+                      objectFit: 'cover', display: 'block'
+                    }}
+                  />
+                </div>
                 <div className="vendor-card-body">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 'var(--radius-sm)', background: 'var(--bg-elevated)', color: 'var(--accent-primary)' }}>
@@ -216,8 +242,12 @@ export default function EventsPage() {
                     <button className="btn btn-ghost btn-sm" onClick={() => setModal(ev)}>
                       <Edit size={14} />
                     </button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(ev.id)}>
-                      <Trash2 size={14} />
+                    <button
+                      className="btn btn-danger btn-sm"
+                      disabled={deleting === ev.id}
+                      onClick={() => handleDelete(ev.id)}
+                    >
+                      {deleting === ev.id ? '...' : <Trash2 size={14} />}
                     </button>
                   </div>
                 </div>
