@@ -20,11 +20,43 @@ const EVENT_TYPE_IMAGES = {
   CUSTOM: '/images/events/custom.png'
 };
 
+const SUGGESTED_LOCATIONS = [
+  'Mumbai, Maharashtra', 'Delhi, NCR', 'Bangalore, Karnataka', 'Hyderabad, Telangana',
+  'Chennai, Tamil Nadu', 'Kolkata, West Bengal', 'Pune, Maharashtra', 'Ahmedabad, Gujarat',
+  'Jaipur, Rajasthan', 'Surat, Gujarat', 'Lucknow, Uttar Pradesh', 'Kanpur, Uttar Pradesh',
+  'Nagpur, Maharashtra', 'Indore, Madhya Pradesh', 'Thane, Maharashtra', 'Bhopal, Madhya Pradesh',
+  'Visakhapatnam, Andhra Pradesh', 'Patna, Bihar', 'Vadodara, Gujarat', 'Ludhiana, Punjab',
+  'Agra, Uttar Pradesh', 'Nashik, Maharashtra', 'Faridabad, Haryana', 'Meerut, Uttar Pradesh',
+  'Rajkot, Gujarat', 'Varanasi, Uttar Pradesh', 'Srinagar, Jammu and Kashmir', 'Aurangabad, Maharashtra',
+  'Amritsar, Punjab', 'Allahabad, Uttar Pradesh', 'Ranchi, Jharkhand', 'Chandigarh',
+  'Coimbatore, Tamil Nadu', 'Jodhpur, Rajasthan', 'Madurai, Tamil Nadu', 'Raipur, Chhattisgarh',
+  'Kota, Rajasthan', 'Guwahati, Assam', 'Mysore, Karnataka', 'Gurgaon, Haryana',
+  'Bhubaneswar, Odisha', 'Thiruvananthapuram, Kerala', 'Noida, Uttar Pradesh', 'Kochi, Kerala', 'Goa'
+];
+
 function EventFormModal({ event, onClose, onSave }) {
   const [form, setForm] = useState(event || {
     title: '', type: 'WEDDING', date: '', location: '', budget: '', description: '', customType: ''
   });
   const [saving, setSaving] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const handleLocationChange = (e) => {
+    const val = e.target.value;
+    setForm({ ...form, location: val });
+    if (val.length >= 3) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSelectLocation = (loc) => {
+    setForm({ ...form, location: loc });
+    setShowSuggestions(false);
+  };
+
+  const filteredLocations = SUGGESTED_LOCATIONS.filter(l => l.toLowerCase().includes(form.location.toLowerCase()));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,8 +112,18 @@ function EventFormModal({ event, onClose, onSave }) {
             </div>
             <div className="form-group">
               <label className="form-label">Date</label>
-              <input type="date" className="form-input" required value={form.date}
-                onChange={e => setForm({ ...form, date: e.target.value })} />
+              {event?.id ? (
+                <div>
+                  <input type="date" className="form-input" disabled value={form.date} style={{ opacity: 0.7, cursor: 'not-allowed', width: '100%', marginBottom: '0.4rem' }} title="Date is locked" />
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Date locked. <span style={{ color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }} onClick={() => toast.success('Request sent')}>Request a change</span>
+                  </div>
+                </div>
+              ) : (
+                <input type="date" className="form-input" required value={form.date}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => setForm({ ...form, date: e.target.value })} />
+              )}
             </div>
           </div>
           {form.type === 'CUSTOM' && (
@@ -91,10 +133,31 @@ function EventFormModal({ event, onClose, onSave }) {
                 onChange={e => setForm({ ...form, customType: e.target.value })} placeholder="e.g. Product Launch" />
             </div>
           )}
-          <div className="form-group">
+          <div className="form-group" style={{ position: 'relative' }}>
             <label className="form-label">Location</label>
             <input className="form-input" required value={form.location}
-              onChange={e => setForm({ ...form, location: e.target.value })} placeholder="Grand Ballroom, Mumbai" />
+              onChange={handleLocationChange}
+              onFocus={() => form.location?.length >= 3 && setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              placeholder="Grand Ballroom, Mumbai" />
+            {showSuggestions && filteredLocations.length > 0 && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+                background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)', maxHeight: '180px', overflowY: 'auto',
+                boxShadow: 'var(--shadow-md)', marginTop: '4px'
+              }}>
+                {filteredLocations.map(loc => (
+                  <div key={loc} onClick={() => handleSelectLocation(loc)}
+                    style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)', fontSize: '0.9rem' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-elevated)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    {loc}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label className="form-label">Budget (₹)</label>

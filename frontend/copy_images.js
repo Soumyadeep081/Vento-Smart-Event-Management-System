@@ -1,12 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
 
-const src = 'C:\\Users\\91620\\.gemini\\antigravity\\brain\\0b27d641-ab7e-4b54-ac80-856b892c8d1d\\media__1774546244754.png';
-const dest = 'c:\\Users\\91620\\vento\\frontend\\public\\hero_vibe.png';
-
-try {
-  fs.copyFileSync(src, dest);
-  console.log('Successfully copied image to ' + dest);
-} catch (err) {
-  console.error('Error copying image:', err);
-}
+fs.copyFileSync(
+    "C:\\Users\\91620\\.gemini\\antigravity\\brain\\71ef62f9-af94-4987-a327-1f7235f95594\\recommendations_bg_1775909388490.png",
+    "c:\\Users\\91620\\vento\\frontend\\public\\recommendations_bg.png"
+);
+fs.copyFileSync(
+    "C:\\Users\\91620\\.gemini\\antigravity\\brain\\71ef62f9-af94-4987-a327-1f7235f95594\\compare_bg_1775909410485.png",
+    "c:\\Users\\91620\\vento\\frontend\\public\\compare_bg.png"
+);
+console.log("Images copied");

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { User, Mail, Shield, Calendar, Edit2, ArrowLeft, Save, X, Phone } from 'lucide-react';
+import { User, Mail, Shield, Calendar, Edit2, ArrowLeft, Save, X, Phone, CheckCircle } from 'lucide-react';
 import { userAPI } from '../api/client';
 import toast from 'react-hot-toast';
 
@@ -23,7 +23,7 @@ export default function ProfilePage() {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     syncProfile();
   }, []);
 

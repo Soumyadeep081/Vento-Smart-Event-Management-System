@@ -49,10 +49,11 @@ public class RecommendationService {
             String city,
             int topN) {
 
-        List<Vendor> vendors = vendorRepository.searchVendors(category, city, null, null, null);
+        // Search by category only — city is used for scoring, not filtering
+        List<Vendor> vendors = vendorRepository.searchVendors(category, null, null, null, null);
 
         List<ScoredVendor> scored = vendors.stream()
-                .map(v -> score(v, budget))
+                .map(v -> score(v, budget, city))
                 .sorted(Comparator.comparingDouble(ScoredVendor::score).reversed())
                 .limit(topN)
                 .toList();
@@ -113,7 +114,7 @@ public class RecommendationService {
         .collect(Collectors.toList());
     }
 
-    private ScoredVendor score(Vendor vendor, BigDecimal budget) {
+    private ScoredVendor score(Vendor vendor, BigDecimal budget, String eventCity) {
         double ratingScore = vendor.getAverageRating() / 5.0;
 
         BigDecimal minPrice = getMinServicePrice(vendor.getId());
@@ -128,9 +129,13 @@ public class RecommendationService {
 
         double availability = hasAvailableService(vendor.getId()) ? 1.0 : 0.0;
 
-        double total = (ratingScore * weightRating)
-                + (budgetFit * weightBudget)
-                + (availability * weightAvailability);
+        double proximity = computeProximityScore(vendor.getCity(), eventCity);
+
+        // Weights: rating 35%, budget 30%, availability 20%, proximity 15%
+        double total = (ratingScore * 0.35)
+                + (budgetFit * 0.30)
+                + (availability * 0.20)
+                + (proximity * 0.15);
 
         return new ScoredVendor(vendor, Math.round(total * 1000.0) / 1000.0);
     }

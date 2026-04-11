@@ -41,15 +41,21 @@ export default function RecommendationsPage() {
   const handleGetRecommendations = async () => {
     if (!selectedEventId) return;
     setLoading(true);
+    setRecommendations([]);
     try {
+      const selectedEvent = events.find(e => String(e.id) === String(selectedEventId));
+      const budget = selectedEvent?.remainingBudget ?? selectedEvent?.budget;
+      const city = selectedEvent?.location;
       const { data } = await recommendationAPI.recommend({
-        eventId: selectedEventId,
+        budget: budget,
         category: category,
-        limit: 5
+        city: city,
+        topN: 5
       });
       setRecommendations(data);
       if (data.length === 0) toast.error('No suitable vendors found for this budget/category');
     } catch (err) {
+      console.error('Recommendation error:', err);
       toast.error('Failed to fetch recommendations');
     } finally { setLoading(false); }
   };
@@ -58,7 +64,7 @@ export default function RecommendationsPage() {
     if (recommendations.length < 2) {
       toast.error('Need at least 2 vendors to compare'); return;
     }
-    const vendorIds = recommendations.slice(0, 3).map(r => r.vendorId);
+    const vendorIds = recommendations.slice(0, 3).map(r => r.id);
     navigate(`/compare?event=${selectedEventId}&vendors=${vendorIds.join(',')}`);
   };
 
@@ -74,28 +80,30 @@ export default function RecommendationsPage() {
 
   return (
     <div className="container page-content">
-      <div className="page-header" style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 3rem' }}>
-        <div className="hero-eyebrow" style={{ marginBottom: '1rem', display: 'inline-flex' }}>
-          <Sparkles size={16} /> Beta Algorithm
-        </div>
-        <h1 className="page-title">AI Vendor Matching</h1>
-        <p className="page-subtitle">
-          Select an event. Our algorithm will analyze your remaining budget, location, and vendor ratings to suggest the best matches.
+      {/* Engaging Hero Banner */}
+      <div style={{ background: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url("/recommendations_bg.png") center/cover no-repeat', borderRadius: 'var(--radius-lg)', padding: '5rem 2rem 6rem', textAlign: 'center', border: '1px solid var(--border-subtle)', position: 'relative', overflow: 'hidden' }}>
+        <h1 style={{ fontSize: '2.4rem', fontWeight: 800, color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.5)', marginBottom: '1rem', letterSpacing: '-0.5px' }}>Find Your Perfect Vendor Match</h1>
+        <p style={{ color: '#e2e8f0', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+          Our smart algorithm analyzes your remaining budget, location, and real user ratings to recommend the best professionals for your big event.
         </p>
       </div>
 
-      <div className="glass-card" style={{ maxWidth: 800, margin: '0 auto 3rem' }}>
+      <div className="card" style={{ maxWidth: '900px', margin: '-3rem auto 3rem', position: 'relative', zIndex: 10, padding: '2rem' }}>
         {events.length === 0 ? (
-          <div className="empty-state">
-            <p>You need an active event to get recommendations.</p>
-            <Link to="/events/new" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-flex' }}>
-              Create Event First
+          <div className="empty-state" style={{ padding: '2rem' }}>
+            <div style={{ width: 64, height: 64, background: 'var(--bg-elevated)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--accent-primary)' }}>
+               <Zap size={32} />
+            </div>
+            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)', fontSize: '1.2rem' }}>No events found</h4>
+            <p style={{ color: 'var(--text-secondary)' }}>You need an active event to get tailored recommendations.</p>
+            <Link to="/events/new" className="btn btn-primary" style={{ marginTop: '1.5rem', display: 'inline-flex', padding: '0.8rem 2rem' }}>
+              Create Event
             </Link>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '1rem', alignItems: 'end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '1.5rem', alignItems: 'end' }}>
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Target Event</label>
+              <label className="form-label" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Target Event</label>
               <select className="form-select" value={selectedEventId} onChange={e => setSelectedEventId(e.target.value)}>
                 {events.map(ev => (
                   <option key={ev.id} value={ev.id}>
@@ -105,15 +113,15 @@ export default function RecommendationsPage() {
               </select>
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Service Category</label>
+              <label className="form-label" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Service Category</label>
               <select className="form-select" value={category} onChange={e => setCategory(e.target.value)}>
                 {['CATERING', 'DECORATION', 'PHOTOGRAPHY', 'VIDEOGRAPHY', 'MUSIC_DJ', 'VENUE'].map(c => (
                   <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>
                 ))}
               </select>
             </div>
-            <button className="btn btn-primary" onClick={handleGetRecommendations} disabled={loading || !selectedEventId} style={{ height: 46 }}>
-              {loading ? 'Analyzing...' : <><Zap size={16} /> Find Matches</>}
+            <button className="btn btn-primary" onClick={handleGetRecommendations} disabled={loading || !selectedEventId} style={{ height: '42px', padding: '0 2rem' }}>
+              {loading ? 'Analyzing...' : <><Zap size={18} /> Find Matches</>}
             </button>
           </div>
         )}
@@ -130,55 +138,60 @@ export default function RecommendationsPage() {
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
             {recommendations.map((rec, i) => (
-              <div key={rec.vendorId} className="vendor-card" style={{
-                display: 'flex', border: i === 0 ? '2px solid var(--accent-primary)' : '',
-                position: 'relative', overflow: 'visible'
+              <div key={rec.id} className="glass-card" style={{
+                padding: 0, overflow: 'hidden', position: 'relative',
+                border: i === 0 ? '2px solid var(--accent-primary)' : ''
               }}>
                 {i === 0 && (
                   <div style={{
-                    position: 'absolute', top: '-12px', left: '2rem',
+                    position: 'absolute', top: '1rem', left: '1rem', zIndex: 3,
                     background: 'var(--gradient-primary)', color: '#fff',
-                    padding: '0.2rem 1rem', borderRadius: 'var(--radius-full)',
-                    fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem'
+                    padding: '0.3rem 0.9rem', borderRadius: 'var(--radius-full)',
+                    fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem'
                   }}>
                     <Sparkles size={12} /> Best Match
                   </div>
                 )}
-                <div style={{ width: '180px', backgroundImage: `url(${CATEGORY_IMAGES[category] || CATEGORY_IMAGES.OTHER})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}></div>
-                  <div style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', color: '#fff', borderRight: '1px solid var(--border-subtle)' }}>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
-                      {Math.round(rec.matchScore)}%
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', marginTop: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Match Score
-                    </div>
+
+                {/* Image header with score overlay */}
+                <div style={{
+                  height: 180, position: 'relative',
+                  backgroundImage: `url(${CATEGORY_IMAGES[category] || CATEGORY_IMAGES.OTHER})`,
+                  backgroundSize: 'cover', backgroundPosition: 'center'
+                }}>
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 100%)' }}></div>
+                  <div style={{
+                    position: 'absolute', bottom: '1rem', right: '1rem', zIndex: 2,
+                    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+                    borderRadius: 'var(--radius-md)', padding: '0.5rem 1rem',
+                    display: 'flex', alignItems: 'baseline', gap: '0.3rem'
+                  }}>
+                    <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                      {Math.round((rec.score || 0) * 100)}%
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      match
+                    </span>
                   </div>
                 </div>
-                <div className="vendor-card-body" style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
-                  <div>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{rec.vendorName}</h3>
-                    <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={14} /> Local</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--accent-warning)' }}><Star size={14} fill="currentColor" /> {rec.ratingScore.toFixed(1)}/100</span>
+
+                {/* Card body */}
+                <div style={{ padding: '1.25rem' }}>
+                  <h3 style={{ fontSize: '1.15rem', marginBottom: '0.6rem' }}>{rec.businessName}</h3>
+                  <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={14} /> {rec.city || 'Local'}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--accent-warning)' }}><Star size={14} fill="currentColor" /> {(rec.averageRating || 0).toFixed(1)}/5.0</span>
+                  </div>
+                  {rec.experience > 0 && (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                      {rec.experience} {rec.experience === 1 ? 'year' : 'years'} experience
                     </div>
-                    {rec.bestService && (
-                      <div style={{ background: 'var(--bg-elevated)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Recommended Package:</div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <strong style={{ color: 'var(--text-primary)' }}>{rec.bestService.name}</strong>
-                          <span style={{ color: 'var(--accent-success)', fontWeight: 600 }}>₹{rec.bestService.price?.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <Link to={`/vendors/${rec.vendorId}`} className="btn btn-primary">
-                      View Profile & Book
-                    </Link>
-                  </div>
+                  )}
+                  <Link to={`/vendors/${rec.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                    View Profile & Book
+                  </Link>
                 </div>
               </div>
             ))}

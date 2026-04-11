@@ -80,7 +80,7 @@ function BookingModal({ service, vendor, onClose }) {
             <label className="form-label">Select Event</label>
             <select className="form-select" required value={form.eventId} onChange={e => setForm({ ...form, eventId: e.target.value })}>
               <option value="">-- Choose an Event --</option>
-              {events.map(ev => (
+              {events.filter(ev => ev.location && vendor.city && ev.location.toLowerCase().includes(vendor.city.toLowerCase())).map(ev => (
                 <option key={ev.id} value={ev.id} disabled={ev.remainingBudget < service.price}>
                   {ev.title} (₹{ev.remainingBudget?.toLocaleString()} left) {ev.remainingBudget < service.price ? ' - Over Budget' : ''}
                 </option>
@@ -94,7 +94,7 @@ function BookingModal({ service, vendor, onClose }) {
           </div>
           <div className="form-group">
             <label className="form-label">Booking Date</label>
-            <input type="date" className="form-input" required value={form.bookingDate} onChange={e => setForm({ ...form, bookingDate: e.target.value })} />
+            <input type="date" className="form-input" required min={new Date().toISOString().split('T')[0]} value={form.bookingDate} onChange={e => setForm({ ...form, bookingDate: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">Special Requests (Optional)</label>

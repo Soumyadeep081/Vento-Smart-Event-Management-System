@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { vendorAPI } from '../api/client';
 import { Search, SlidersHorizontal, Star, MapPin, Briefcase, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react';
 
@@ -39,10 +39,13 @@ function StarDisplay({ rating }) {
 }
 
 export default function VendorsPage() {
+  const [searchParams] = useSearchParams();
+  const initialCity = searchParams.get('city') || '';
+
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    keyword: '', category: '', city: '', minRating: '', minExperience: ''
+    keyword: '', category: '', city: initialCity, minRating: '', minExperience: ''
   });
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);

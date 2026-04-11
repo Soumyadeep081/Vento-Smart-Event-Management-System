@@ -421,7 +421,7 @@ export default function EventDetailPage() {
             <Users size={18} style={{ color: 'var(--accent-primary)' }} />
             Bookings ({bookings.length})
           </h3>
-          <Link to="/vendors" className="btn btn-primary btn-sm">
+          <Link to={`/vendors?city=${encodeURIComponent(ev.location ? ev.location.split(',')[0].trim() : '')}`} className="btn btn-primary btn-sm">
             <Plus size={14} /> Book a Vendor
           </Link>
         </div>
@@ -438,7 +438,7 @@ export default function EventDetailPage() {
             </div>
             <div className="empty-title" style={{ fontSize: '1.1rem' }}>No bookings yet</div>
             <p style={{ fontSize: '0.9rem' }}>Browse vendors to start booking services for this event.</p>
-            <Link to="/vendors" className="btn btn-secondary btn-sm" style={{ marginTop: '1rem' }}>
+            <Link to={`/vendors?city=${encodeURIComponent(ev.location ? ev.location.split(',')[0].trim() : '')}`} className="btn btn-secondary btn-sm" style={{ marginTop: '1rem' }}>
               Browse Vendors
             </Link>
           </div>

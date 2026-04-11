@@ -1,16 +1,17 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
-  CalendarDays, Users, Star, Zap, Bell, LogOut,
-  LayoutDashboard, ShoppingBag, BookOpen, Menu, X, Wind, Sun, Moon
+  CalendarDays, Users, Star, Zap, LogOut,
+  LayoutDashboard, BookOpen, Wind, Sun, Moon, Menu, X, Palette
 } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const handleLogout = () => {
     logout();
@@ -26,48 +27,46 @@ export default function Navbar() {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   const navItems = isAuthenticated ? [
-    { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
-    { to: '/events', label: 'Events', icon: <CalendarDays size={16} /> },
-    { to: '/vendors', label: 'Vendors', icon: <Users size={16} /> },
-    { to: '/recommendations', label: 'AI Picks', icon: <Zap size={16} /> },
-    { to: '/compare', label: 'Compare', icon: <Star size={16} /> },
-    { to: '/bookings', label: 'Bookings', icon: <BookOpen size={16} /> },
+    { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+    { to: '/events', label: 'Events', icon: <CalendarDays size={18} /> },
+    { to: '/vendors', label: 'Vendors', icon: <Users size={18} /> },
+    { to: '/recommendations', label: 'AI Picks', icon: <Zap size={18} /> },
+    { to: '/compare', label: 'Compare', icon: <Star size={18} /> },
+    { to: '/bookings', label: 'Bookings', icon: <BookOpen size={18} /> },
   ] : [
-    { to: '/vendors', label: 'Browse Vendors', icon: <Users size={16} /> },
-    { to: '/recommendations', label: 'AI Picks', icon: <Zap size={16} /> },
+    { to: '/vendors', label: 'Browse Vendors', icon: <Users size={18} /> },
+    { to: '/recommendations', label: 'AI Picks', icon: <Zap size={18} /> },
   ];
 
   return (
     <nav className="navbar">
       <div className="container navbar-inner">
+        {/* Left side: Logo */}
         <Link to="/" className="logo" style={{ fontFamily: 'var(--font-heading)', fontWeight: '900', letterSpacing: '-1px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-primary)' }}>
           <Wind size={24} strokeWidth={2.5} /> vento
         </Link>
 
-        {/* Desktop Nav */}
-        <ul className="nav-links">
-          {navItems.map(item => (
-            <li key={item.to}>
-              <Link
-                to={item.to}
-                className={`nav-link ${isActive(item.to) ? 'active' : ''}`}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-              >
-                {item.icon} {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        {/* Actions */}
+        {/* Right side: Profile + Menu */}
         <div className="nav-actions">
-          <button className="btn btn-ghost btn-sm" onClick={toggleTheme} style={{ padding: '0.4rem', borderRadius: '50%', minWidth: '36px', height: '36px' }}>
-            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
-          
           {isAuthenticated ? (
             <>
               <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', transition: 'opacity var(--transition-fast)' }}
@@ -89,6 +88,43 @@ export default function Navbar() {
               <Link to="/register" className="btn btn-primary btn-sm">Get Started</Link>
             </>
           )}
+
+          {/* Hamburger Menu */}
+          <div ref={menuRef} style={{ position: 'relative' }}>
+            <button
+              className="hamburger-btn"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+
+            {menuOpen && (
+              <div className="hamburger-menu" style={{ right: 0, left: 'auto' }}>
+                <div className="hamburger-menu-section">
+                  {navItems.map(item => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`hamburger-menu-item ${isActive(item.to) ? 'active' : ''}`}
+                    >
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+                <div className="hamburger-menu-divider"></div>
+                <button className="hamburger-menu-item" onClick={toggleTheme}>
+                  <Palette size={18} />
+                  <span style={{ flex: 1 }}>Appearance</span>
+                  <span className="theme-pill">
+                    {theme === 'light' ? <Sun size={14} /> : <Moon size={14} />}
+                    {theme === 'light' ? 'Light' : 'Dark'}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>
