@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { eventAPI, recommendationAPI } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { Zap, Sparkles, MapPin, Star, Plus } from 'lucide-react';
+import { Search, Sparkles, MapPin, Star, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CATEGORY_IMAGES = {
@@ -27,6 +27,7 @@ export default function RecommendationsPage() {
   const [category, setCategory] = useState('CATERING');
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchMessage, setSearchMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function RecommendationsPage() {
     if (!selectedEventId) return;
     setLoading(true);
     setRecommendations([]);
+    setSearchMessage('');
     try {
       const selectedEvent = events.find(e => String(e.id) === String(selectedEventId));
       const budget = selectedEvent?.remainingBudget ?? selectedEvent?.budget;
@@ -53,7 +55,9 @@ export default function RecommendationsPage() {
         topN: 5
       });
       setRecommendations(data);
-      if (data.length === 0) toast.error('No suitable vendors found for this budget/category');
+      if (data.length === 0) {
+        setSearchMessage('No suitable vendors found for this budget/category in the event location.');
+      }
     } catch (err) {
       console.error('Recommendation error:', err);
       toast.error('Failed to fetch recommendations');
@@ -71,7 +75,7 @@ export default function RecommendationsPage() {
   if (user?.role === 'VENDOR') {
     return (
       <div className="container page-content empty-state">
-        <Zap size={48} color="var(--accent-primary)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+        <Search size={48} color="var(--accent-primary)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
         <h2 className="empty-title">Vendor View</h2>
         <p>AI Recommendations are designed for Event Planners to find you based on their layout and budget.</p>
       </div>
@@ -92,7 +96,7 @@ export default function RecommendationsPage() {
         {events.length === 0 ? (
           <div className="empty-state" style={{ padding: '2rem' }}>
             <div style={{ width: 64, height: 64, background: 'var(--bg-elevated)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--accent-primary)' }}>
-               <Zap size={32} />
+               <Search size={32} />
             </div>
             <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)', fontSize: '1.2rem' }}>No events found</h4>
             <p style={{ color: 'var(--text-secondary)' }}>You need an active event to get tailored recommendations.</p>
@@ -121,8 +125,14 @@ export default function RecommendationsPage() {
               </select>
             </div>
             <button className="btn btn-primary" onClick={handleGetRecommendations} disabled={loading || !selectedEventId} style={{ height: '42px', padding: '0 2rem' }}>
-              {loading ? 'Analyzing...' : <><Zap size={18} /> Find Matches</>}
+              {loading ? 'Analyzing...' : <><Search size={18} /> Find Matches</>}
             </button>
+          </div>
+        )}
+
+        {searchMessage && !loading && (
+          <div style={{ color: 'var(--accent-warning)', fontSize: '0.85rem', marginTop: '1.25rem', backgroundColor: 'var(--bg-elevated)', padding: '0.4rem 0.75rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ fontSize: '1rem' }}>⚠️</span> {searchMessage}
           </div>
         )}
       </div>

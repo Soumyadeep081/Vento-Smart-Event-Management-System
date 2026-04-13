@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Users, CalendarDays, Star, ShieldCheck, TrendingUp, ArrowRight, Wind, Heart } from 'lucide-react';
+import { Sparkles, Users, CalendarDays, Star, ShieldCheck, TrendingUp, ArrowRight, Wind, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const FEATURES = [
   { icon: <CalendarDays size={24} />, title: 'Smart Event Planning', desc: 'Create and manage all your events in one place with intelligent scheduling.' },
   { icon: <Users size={24} />, title: 'Verified Vendor Network', desc: 'Browse hundreds of vetted vendors across all categories and cities.' },
-  { icon: <Zap size={24} />, title: 'AI Recommendations', desc: 'Our scoring engine matches vendors to your budget and preferences.' },
+  { icon: <Sparkles size={24} />, title: 'AI Recommendations', desc: 'Our scoring engine matches vendors to your budget and preferences.' },
   { icon: <TrendingUp size={24} />, title: 'Vendor Comparison', desc: 'Compare multiple vendors side-by-side with weighted scoring metrics.' },
   { icon: <ShieldCheck size={24} />, title: 'Secure Bookings', desc: 'Double-booking prevention and real-time budget tracking built in.' },
   { icon: <Heart size={24} />, title: 'Reviews & Ratings', desc: 'Transparent ratings with post-event reviews from real customers.' },
@@ -245,9 +245,9 @@ export default function LandingPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2.5rem' }}>
             {[
-              { name: 'Sarah Jenkins', role: 'Wedding Planner', quote: 'Vento completely changed how I source vendors. The AI recommendations are surprisingly accurate and save me hours of research time.', img: 'https://i.pravatar.cc/150?u=sarah' },
-              { name: 'Michael Chen', role: 'Corporate Event Manager', quote: 'The vendor comparison tool is essential for my reports. Being able to show clients side-by-side data makes decision-making so much faster.', img: 'https://i.pravatar.cc/150?u=michael' },
-              { name: 'Elena Rodriguez', role: 'Birthday Host', quote: 'I was overwhelmed planning my 30th until I found Vento. The platform is beautiful, easy to use, and led me to the best caterers in town.', img: 'https://i.pravatar.cc/150?u=elena' }
+              { name: 'Priya Sharma', role: 'Wedding Planner', quote: 'Vento completely changed how I source vendors. The smart recommendations are surprisingly accurate and save me hours of research time.', img: '/images/priya.jpg' },
+              { name: 'Rahul Verma', role: 'Corporate Event Manager', quote: 'The vendor comparison tool is essential for my reports. Being able to show clients side-by-side data makes decision-making so much faster.', img: '/images/rahul.jpg' },
+              { name: 'Ananya Desai', role: 'Birthday Host', quote: 'I was overwhelmed planning my 30th until I found Vento. The platform is beautiful, easy to use, and led me to the best caterers in town.', img: '/images/ananya.jpg' }
             ].map((t, i) => (
               <div key={i} style={{ background: 'var(--bg-card)', padding: '3rem', borderRadius: '3rem', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-subtle)', position: 'relative', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div style={{ position: 'absolute', top: '1.5rem', right: '2rem', color: 'var(--accent-primary)', opacity: 0.1 }}><Star size={64} fill="currentColor" /></div>

@@ -27,4 +27,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT SUM(b.cost) FROM Booking b WHERE b.event.id = :eventId AND b.status != 'CANCELLED'")
     java.math.BigDecimal sumCostByEventId(@Param("eventId") Long eventId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Booking b SET b.status = 'COMPLETED' WHERE b.bookingDate < :currentDate AND b.status = 'CONFIRMED'")
+    int completePastBookings(@Param("currentDate") LocalDate currentDate);
 }

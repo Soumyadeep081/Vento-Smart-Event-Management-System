@@ -49,8 +49,8 @@ public class RecommendationService {
             String city,
             int topN) {
 
-        // Search by category only — city is used for scoring, not filtering
-        List<Vendor> vendors = vendorRepository.searchVendors(category, null, null, null, null);
+        // Search by category and city to enforce location matching
+        List<Vendor> vendors = vendorRepository.searchVendors(category, city, null, null, null);
 
         List<ScoredVendor> scored = vendors.stream()
                 .map(v -> score(v, budget, city))

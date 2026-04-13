@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, GOOGLE_CLIENT_ID } from '../context/AuthContext';
-import { Eye, EyeOff, Wind, Zap, SlidersHorizontal, CalendarCheck } from 'lucide-react';
+import { Eye, EyeOff, Wind, Sparkles, SlidersHorizontal, CalendarCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -176,7 +176,7 @@ export default function LoginPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {[
-            { icon: <Zap size={16} strokeWidth={2.5} />, text: 'Smart AI vendor recommendations' },
+            { icon: <Sparkles size={16} strokeWidth={2.5} />, text: 'Smart AI vendor recommendations' },
             { icon: <SlidersHorizontal size={16} strokeWidth={2.5} />, text: 'Side-by-side vendor comparisons' },
             { icon: <CalendarCheck size={16} strokeWidth={2.5} />, text: 'Seamless booking management' },
           ].map((item, i) => (

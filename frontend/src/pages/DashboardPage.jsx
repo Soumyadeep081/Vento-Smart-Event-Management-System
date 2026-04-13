@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { eventAPI, bookingAPI, vendorAPI } from '../api/client';
-import { CalendarDays, Plus, TrendingUp, BookOpen, Users, DollarSign, Heart, Cake, Briefcase, PartyPopper, ClipboardList, Zap, BarChart2, Store, ChevronRight } from 'lucide-react';
+import { CalendarDays, Plus, TrendingUp, BookOpen, Users, DollarSign, Heart, Cake, Briefcase, PartyPopper, ClipboardList, Sparkles, BarChart2, Store, ChevronRight } from 'lucide-react';
 
 function StatusBadge({ status }) {
   const map = {
@@ -113,7 +113,7 @@ export default function DashboardPage() {
         }}>
           {[
             { to: '/vendors', icon: <Users size={24} color="var(--accent-primary)" />, label: 'Browse Vendors', desc: 'Find perfect matches' },
-            { to: '/recommendations', icon: <Zap size={24} color="var(--accent-warning)" />, label: 'AI Matches', desc: 'Smart suggestions' },
+            { to: '/recommendations', icon: <Sparkles size={24} color="var(--accent-warning)" />, label: 'AI Matches', desc: 'Smart suggestions' },
             { to: '/compare', icon: <BarChart2 size={24} color="var(--accent-success)" />, label: 'Compare', desc: 'Side-by-side view' },
             ...(user?.role === 'VENDOR' ? [{ to: '/vendor-profile', icon: <Store size={24} color="var(--accent-pink)" />, label: 'My Shop', desc: 'Manage your profile' }] : [])
           ].map((link, i) => (

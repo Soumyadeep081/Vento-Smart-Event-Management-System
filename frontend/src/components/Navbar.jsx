@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import {
-  CalendarDays, Users, Star, Zap, LogOut,
+  CalendarDays, Users, Star, Sparkles, LogOut,
   LayoutDashboard, BookOpen, Wind, Sun, Moon, Menu, X, Palette
 } from 'lucide-react';
 
@@ -49,12 +49,12 @@ export default function Navbar() {
     { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
     { to: '/events', label: 'Events', icon: <CalendarDays size={18} /> },
     { to: '/vendors', label: 'Vendors', icon: <Users size={18} /> },
-    { to: '/recommendations', label: 'AI Picks', icon: <Zap size={18} /> },
+    { to: '/recommendations', label: 'AI Picks', icon: <Sparkles size={18} /> },
     { to: '/compare', label: 'Compare', icon: <Star size={18} /> },
     { to: '/bookings', label: 'Bookings', icon: <BookOpen size={18} /> },
   ] : [
     { to: '/vendors', label: 'Browse Vendors', icon: <Users size={18} /> },
-    { to: '/recommendations', label: 'AI Picks', icon: <Zap size={18} /> },
+    { to: '/recommendations', label: 'AI Picks', icon: <Sparkles size={18} /> },
   ];
 
   return (
