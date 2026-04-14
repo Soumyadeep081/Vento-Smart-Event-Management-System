@@ -41,7 +41,7 @@ Welcome to the **Vento** repository! Vento is a premium, modern, and sleek event
 2. Configure your `application.properties` or `application.yml` with your database credentials.
 3. Run the application:
    ```bash
-   ./mvnw spring-boot:run
+   ./gradlew bootRun
    ```
    *(The server usually starts on `http://localhost:8080`)*
 
@@ -64,7 +64,7 @@ Welcome to the **Vento** repository! Vento is a premium, modern, and sleek event
 Vento strips away bloated, "AI-generated" UI boilerplates in favor of a bespoke, editorial design. It utilizes beautiful typographic hierarchy, premium portrait photography, subtle gradient blurs, and minimal card borders to ensure the interface looks human-crafted and undeniably professional.
 
 ## 🤝 Contributing
-Vento is an open-source project and we would love for you to contribute! Whether it's squashing bugs, improving the sleek UI, optimizing backend performance, or adding entirely new features, your help is welcome. 
+Vento is an open-source project and I would love for you to contribute! Whether it's squashing bugs, improving the sleek UI, optimizing backend performance, or adding entirely new features, your help is welcome. 
 
 ### How to Contribute
 1. **Fork** the repository
